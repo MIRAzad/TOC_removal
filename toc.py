@@ -33,7 +33,9 @@ def get_contentless_pdf(pdf_file, exclude_pages):
             if page_num in exclude_pages:
                 continue
             pdf_writer.add_page(page)
-    output_pdf_path = os.path.join("output", "modified_pdf_except_toc.pdf")
+    output_dir = "output"
+    os.makedirs(output_dir, exist_ok=True)  # Create the directory if it doesn't exist
+    output_pdf_path = os.path.join(output_dir, "modified_pdf_except_toc.pdf")
     with open(output_pdf_path, 'wb') as output_file:
         pdf_writer.write(output_file)
     return output_pdf_path

@@ -56,7 +56,7 @@ def main():
         if toc_entries:
             st.write("Table of Contents Entries:")
             for entry, page in zip(toc_entries, toc_pages):
-                st.write(f"Entry: {entry}, Page: {page}")
+                st.markdown(f'''{entry}, Page: {page}''')
             st.toast('Removed ', icon='😍')
             st.markdown('''_Page numbers where TOC entries are extracted_:''')
             st.write(list(set(toc_pages)))

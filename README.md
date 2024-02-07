@@ -8,7 +8,7 @@ This Python script removes the Table of Contents (TOC) pages from a PDF file bas
 ### Prerequisites
 
 - Python 3.x
-- Required Python packages: `PyPDF2`,fitz,streamlit (for PDF manipulation)
+- Required Python packages: `PyPDF2`,`fitz`,`streamlit` (for PDF manipulation)
 
 ### Installation
 

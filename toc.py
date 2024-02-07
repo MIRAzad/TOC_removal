@@ -6,7 +6,7 @@ import PyPDF2
 def extract_toc(pdf_path, max_pages=10):
     toc_entries = []
     toc_pages = []
-    doc = fitz.open_document(pdf_path)
+    doc = fitz.open(pdf_path)
     for page_num in range(min(max_pages, len(doc))):
         page = doc.load_page(page_num)
         text = page.get_text("text")

@@ -52,9 +52,10 @@ def main():
 
         # Extract TOC
         toc_entries, toc_pages = extract_toc("temp_pdf.pdf", max_pages=10)
-
+        content=""
         if toc_entries:
             st.write("Table of Contents Entries:")
+
             for entry, page in zip(toc_entries, toc_pages):
                 content+=entry
                 # st.markdown(f'''{entry}, Page: {page}''')

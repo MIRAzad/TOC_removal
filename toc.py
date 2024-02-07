@@ -38,7 +38,7 @@ def get_contentless_pdf(pdf_file, exclude_pages):
 
 # Streamlit app
 def main():
-    st.title("PDF Table of Contents Extractor")
+    st.header("Remove Table of Content")
 
     # File uploader
     uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
@@ -57,7 +57,7 @@ def main():
             st.write("Table of Contents Entries:")
             for entry, page in zip(toc_entries, toc_pages):
                 st.write(f"Entry: {entry}, Page: {page}")
-            st.write("Page numbers where TOC entries are extracted:")
+            st.markdown("_Page numbers where TOC entries are extracted_:")
             st.write(list(set(toc_pages)))
 
             # Create PDF without TOC pages

@@ -1,6 +1,7 @@
 import streamlit as st
 import fitz
 import PyPDF2
+import os
 
 # Function to extract TOC from PDF
 def extract_toc(pdf_path, max_pages=10):
@@ -23,7 +24,7 @@ def extract_toc(pdf_path, max_pages=10):
     doc.close()
     return toc_entries, toc_pages
 
-# Function to create a PDF without TOC pages
+# Function to create a PDF without TOC pages and return the modified PDF file path
 def get_contentless_pdf(pdf_file, exclude_pages):
     pdf_writer = PyPDF2.PdfWriter()
     with open(pdf_file, 'rb') as file:
@@ -32,9 +33,10 @@ def get_contentless_pdf(pdf_file, exclude_pages):
             if page_num in exclude_pages:
                 continue
             pdf_writer.add_page(page)
-    with open("modified_pdf_except_toc.pdf", 'wb') as output_file:
+    output_pdf_path = os.path.join("output", "modified_pdf_except_toc.pdf")
+    with open(output_pdf_path, 'wb') as output_file:
         pdf_writer.write(output_file)
-    st.success("PDF saved without TOC pages")
+    return output_pdf_path
 
 # Streamlit app
 def main():
@@ -59,13 +61,22 @@ def main():
             for entry, page in zip(toc_entries, toc_pages):
                 content+=entry
                 # st.markdown(f'''{entry}, Page: {page}''')
-            st.markdown(f'''{content}''')
+            # st.markdown(f'''{content}''')
             st.toast('Removed ', icon='😍')
             st.markdown('''_Page numbers where TOC entries are extracted_:''')
             st.write(list(set(toc_pages)))
 
             # Create PDF without TOC pages
-            get_contentless_pdf("temp_pdf.pdf", list(set(toc_pages)))
+            output_pdf_path = get_contentless_pdf("temp_pdf.pdf", list(set(toc_pages)))
+            st.success("PDF saved without TOC pages")
+
+            # Provide a download link for the modified PDF
+            st.download_button(
+                label="Download modified PDF",
+                data=open(output_pdf_path, "rb").read(),
+                file_name="modified_pdf_except_toc.pdf",
+                mime="application/pdf"
+            )
 
         else:
             st.write("No Table of Contents found in the PDF.")

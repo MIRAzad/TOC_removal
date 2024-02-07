@@ -40,29 +40,42 @@ def get_contentless_pdf(pdf_file, exclude_pages):
 def main():
     st.title("PDF Table of Contents Extractor")
 
-    # File uploader
-    uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
+    # File uploader for PDF
+    uploaded_pdf_file = st.file_uploader("Upload a PDF file", type=["pdf"])
 
-    if uploaded_file is not None:
+    # File uploader for static files
+    uploaded_static_files = st.file_uploader("Upload static files", type=["css", "js", "png", "jpg"], accept_multiple_files=True)
+
+    if uploaded_pdf_file is not None:
         st.write("Extracting Table of Contents...")
-
-        # Save uploaded file temporarily
+        # Save uploaded PDF file temporarily
         with open("temp_pdf.pdf", "wb") as f:
-            f.write(uploaded_file.getbuffer())
-
+            f.write(uploaded_pdf_file.getbuffer())
+        
         # Extract TOC
         toc_entries, toc_pages = extract_toc("temp_pdf.pdf", max_pages=10)
-
+        
+        # Process static files
+        static_files_paths = []
+        for static_file in uploaded_static_files:
+            file_path = f"static/{static_file.name}"
+            with open(file_path, "wb") as f:
+                f.write(static_file.getbuffer())
+            static_files_paths.append(file_path)
+        
+        # Include static files in PDF processing logic if uploaded
+        if static_files_paths:
+            # Process PDF with static files
+            # You may need to modify this part to include static files in PDF processing
+            pass
+        
+        # Display extracted TOC
         if toc_entries:
             st.write("Table of Contents Entries:")
             for entry, page in zip(toc_entries, toc_pages):
                 st.write(f"Entry: {entry}, Page: {page}")
             st.write("Page numbers where TOC entries are extracted:")
             st.write(list(set(toc_pages)))
-
-            # Create PDF without TOC pages
-            get_contentless_pdf("temp_pdf.pdf", list(set(toc_pages)))
-
         else:
             st.write("No Table of Contents found in the PDF.")
 

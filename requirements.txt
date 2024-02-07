@@ -1,5 +1,5 @@
-fitz==0.0.1.dev2
+PyMuPDF==1.23.21
+fitz
 streamlit==0.1.0
 PyPDF2==3.0.1
-PyMuPDF==1.23.21
 frontend==0.0.3

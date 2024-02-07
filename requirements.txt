@@ -3,3 +3,4 @@ fitz
 streamlit==0.1.0
 PyPDF2==3.0.1
 frontend==0.0.3
+tools

@@ -63,7 +63,7 @@ def main():
             for entry, page in zip(toc_entries, toc_pages):
                 content+=entry
                 # st.markdown(f'''{entry}, Page: {page}''')
-            # st.markdown(f'''{content}''')
+            st.markdown(f'''{content}''')
             st.toast('Removed ', icon='😍')
             st.markdown('''_Page numbers where TOC entries are extracted_:''')
             st.write(list(set(toc_pages)))

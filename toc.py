@@ -1,87 +1,85 @@
 import streamlit as st
 import fitz
 import PyPDF2
-import os
+from typing import List, Tuple
 
-# Function to extract TOC from PDF
-def extract_toc(pdf_path, max_pages=10):
+def extract_toc(pdf_path: str, max_pages: int = 10) -> Tuple[List[str], List[int]]:
+    """Extracts Table of Contents from the given PDF.
+
+    Parameters:
+    - pdf_path (str): Path to the PDF file.
+    - max_pages (int): Maximum number of pages to scan for TOC. Default is 10.
+
+    Returns:
+    - toc_entries (List[str]): List of TOC entries.
+    - toc_pages (List[int]): List of page numbers where TOC entries are found.
+    """
     toc_entries = []
     toc_pages = []
-    doc = fitz.open(pdf_path)
-    for page_num in range(min(max_pages, len(doc))):
-        page = doc.load_page(page_num)
-        text = page.get_text("text")
-        # Split text into lines
-        lines = text.split("\n")
-        # Look for patterns indicative of TOC entries
-        for line in lines:
-            # Check if the line starts with text, has more than 20 spaces, or dots, and ends with a numeric number.
-            if line.strip() and line[0].isalpha() and (line.count(" ") > 20 or line.count(".") > 20) and line.rstrip()[-1].isdigit():
-                # Check if the line ends with a numeric character and the total character length in a line is > 20
-                if line.strip()[-1].isdigit() and len(line) > 20:
-                    toc_entries.append(line)  # Store the TOC entry text without stripping
-                    toc_pages.append(page_num)  # Store the current page number
-    doc.close()
+    try:
+        doc = fitz.open(pdf_path)
+        for page_num in range(min(max_pages, len(doc))):
+            page = doc.load_page(page_num)
+            text = page.get_text("text")
+            lines = text.split("\n")
+            for line in lines:
+                #Checking contineous spaces or dots between text and page no as almost evrey TOC has.
+                #Because we may have text foloowed by numeric number and it takes as TOC,so this will handle 
+                if line.strip() and line[0].isalpha() and (line.count(" ") > 20 or line.count(".") > 20) and line.rstrip()[-1].isdigit():
+                    if line.strip()[-1].isdigit() and len(line) > 20:
+                        toc_entries.append(line)
+                        toc_pages.append(page_num)
+        doc.close()
+    except Exception as e:
+        st.error(f"Error extracting Table of Contents: {e}")
     return toc_entries, toc_pages
 
-# Function to create a PDF without TOC pages and return the modified PDF file path
-def get_contentless_pdf(pdf_file, exclude_pages):
-    pdf_writer = PyPDF2.PdfWriter()
-    with open(pdf_file, 'rb') as file:
-        pdf_reader = PyPDF2.PdfReader(file)
-        for page_num, page in enumerate(pdf_reader.pages):
-            if page_num in exclude_pages:
-                continue
-            pdf_writer.add_page(page)
-    output_dir = "output"
-    os.makedirs(output_dir, exist_ok=True)  # Create the directory if it doesn't exist
-    output_pdf_path = os.path.join(output_dir, "modified_pdf_except_toc.pdf")
-    with open(output_pdf_path, 'wb') as output_file:
-        pdf_writer.write(output_file)
-    return output_pdf_path
+def get_contentless_pdf(pdf_file: str, exclude_pages: List[int]) -> None:
+    """Creates a PDF without TOC pages.
 
-# Streamlit app
-def main():
-    st.header("Remove Table of Content")
+    Parameters:
+    - pdf_file (str): Path to the PDF file.
+    - exclude_pages (List[int]): List of page numbers to exclude.
 
-    # File uploader
+    Returns:
+    - None
+    """
+    try:
+        pdf_writer = PyPDF2.PdfWriter()
+        with open(pdf_file, 'rb') as file:
+            pdf_reader = PyPDF2.PdfReader(file)
+            for page_num, page in enumerate(pdf_reader.pages):
+                if page_num in exclude_pages:
+                    continue
+                pdf_writer.add_page(page)
+        with open("modified_pdf_except_toc.pdf", 'wb') as output_file:
+            pdf_writer.write(output_file)
+        st.success("PDF saved without TOC pages")
+    except Exception as e:
+        st.error(f"Error creating PDF without TOC pages: {e}")
+
+def main() -> None:
+    st.title("PDF Table of Contents Extractor")
     uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
 
     if uploaded_file is not None:
-        st.write("Extracting Table of Contents...")
+        try:
+            st.write("Extracting Table of Contents...")
+            with open("temp_pdf.pdf", "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            toc_entries, toc_pages = extract_toc("temp_pdf.pdf", max_pages=10)
 
-        # Save uploaded file temporarily
-        with open("temp_pdf.pdf", "wb") as f:
-            f.write(uploaded_file.getbuffer())
-
-        # Extract TOC
-        toc_entries, toc_pages = extract_toc("temp_pdf.pdf", max_pages=10)
-        content=""
-        if toc_entries:
-            st.write("Table of Contents Entries:")
-
-            for entry, page in zip(toc_entries, toc_pages):
-                content+=entry
-                # st.markdown(f'''{entry}, Page: {page}''')
-            st.markdown(f'''{content}''')
-            st.toast('Removed ', icon='😍')
-            st.markdown('''_Page numbers where TOC entries are extracted_:''')
-            st.write(list(set(toc_pages)))
-
-            # Create PDF without TOC pages
-            output_pdf_path = get_contentless_pdf("temp_pdf.pdf", list(set(toc_pages)))
-            st.success("PDF saved without TOC pages")
-
-            # Provide a download link for the modified PDF
-            st.download_button(
-                label="Download modified PDF",
-                data=open(output_pdf_path, "rb").read(),
-                file_name="modified_pdf_except_toc.pdf",
-                mime="application/pdf"
-            )
-
-        else:
-            st.write("No Table of Contents found in the PDF.")
+            if toc_entries:
+                st.write("Table of Contents Entries:")
+                for entry, page in zip(toc_entries, toc_pages):
+                    st.write(f"Entry: {entry}, Page: {page}")
+                st.write("Page numbers where TOC entries are extracted:")
+                st.write(list(set(toc_pages)))
+                get_contentless_pdf("temp_pdf.pdf", list(set(toc_pages)))
+            else:
+                st.write("No Table of Contents found in the PDF.")
+        except Exception as e:
+            st.error(f"Error processing PDF: {e}")
 
 if __name__ == "__main__":
     main()

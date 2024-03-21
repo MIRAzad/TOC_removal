@@ -34,6 +34,10 @@ def extract_toc(pdf_path: str, max_pages: int = 10) -> Tuple[List[str], List[int
         st.error(f"Error extracting Table of Contents: {e}")
     return toc_entries, toc_pages
 
+
+
+
+
 def get_contentless_pdf(pdf_file: str, exclude_pages: List[int]) -> None:
     """Creates a PDF without TOC pages.
 
